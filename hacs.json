@@ -1,0 +1,10 @@
+
+{
+    "name": "17Track translated",
+    "domains": [
+        "sensor"
+    ],
+    "iot_class": "Cloud Polling",
+    "render_readme": true,
+    "homeassistant": "2021.4.0"
+}

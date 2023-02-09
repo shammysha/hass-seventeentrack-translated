@@ -6,6 +6,9 @@ import logging
 
 from py17track import Client as SeventeenTrackClient
 from py17track.errors import SeventeenTrackError
+
+from translators import translate_text
+
 import voluptuous as vol
 
 from homeassistant.components import persistent_notification
@@ -27,6 +30,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.event import async_call_later
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from homeassistant.util import Throttle, slugify
+from homeassistant.components.surepetcare.const import ATTR_LOCATION
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -39,9 +43,13 @@ ATTR_PACKAGE_TYPE = "package_type"
 ATTR_STATUS = "status"
 ATTR_TRACKING_INFO_LANGUAGE = "tracking_info_language"
 ATTR_TRACKING_NUMBER = "tracking_number"
+ATTR_INFO_TEXT_TRANS = "info_text_translated" 
+ATTR_LOCATION_TRANS = "location_translated"
 
 CONF_SHOW_ARCHIVED = "show_archived"
 CONF_SHOW_DELIVERED = "show_delivered"
+CONF_TRANSLATOR = "translator"
+CONF_LANGUAGE = "language"
 
 DATA_PACKAGES = "package_data"
 DATA_SUMMARY = "summary_data"
@@ -65,6 +73,8 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
         vol.Required(CONF_USERNAME): cv.string,
         vol.Required(CONF_PASSWORD): cv.string,
+        vol.Optional(CONF_TRANSLATOR, default=None): cv.string,
+        vol.Optional(CONF_LANGUAGE, default=None): cv.string,
         vol.Optional(CONF_SHOW_ARCHIVED, default=False): cv.boolean,
         vol.Optional(CONF_SHOW_DELIVERED, default=False): cv.boolean,
     }
@@ -104,6 +114,8 @@ async def async_setup_platform(
         config[CONF_SHOW_ARCHIVED],
         config[CONF_SHOW_DELIVERED],
         str(hass.config.time_zone),
+        config[CONF_TRANSLATOR],
+        config[CONF_LANGUAGE]
     )
     await data.async_update()
 
@@ -151,6 +163,8 @@ class SeventeenTrackSummarySensor(SensorEntity):
                     ATTR_STATUS: package.status,
                     ATTR_LOCATION: package.location,
                     ATTR_TRACKING_NUMBER: package.tracking_number,
+                    ATTR_INFO_TEXT_TRANS: package[ATTR_INFO_TEXT_TRANS],
+                    ATTR_LOCATION_TRANS: package[ATTR_LOCATION_TRANS],
                 }
             )
 
@@ -178,6 +192,8 @@ class SeventeenTrackPackageSensor(SensorEntity):
             ATTR_PACKAGE_TYPE: package.package_type,
             ATTR_TRACKING_INFO_LANGUAGE: package.tracking_info_language,
             ATTR_TRACKING_NUMBER: package.tracking_number,
+            ATTR_INFO_TEXT_TRANS: package[ATTR_INFO_TEXT_TRANS],
+            ATTR_LOCATION_TRANS: package[ATTR_LOCATION_TRANS],            
         }
         self._data = data
         self._friendly_name = package.friendly_name
@@ -229,6 +245,8 @@ class SeventeenTrackPackageSensor(SensorEntity):
                 ATTR_INFO_TEXT: package.info_text,
                 ATTR_TIMESTAMP: package.timestamp,
                 ATTR_LOCATION: package.location,
+                ATTR_INFO_TEXT_TRANS: package[ATTR_INFO_TEXT_TRANS],
+                ATTR_LOCATION_TRANS: package[ATTR_LOCATION_TRANS],                
             }
         )
         self._state = package.status
@@ -276,6 +294,8 @@ class SeventeenTrackData:
         show_archived,
         show_delivered,
         timezone,
+        translator,
+        language
     ):
         """Initialize."""
         self._async_add_entities = async_add_entities
@@ -287,6 +307,8 @@ class SeventeenTrackData:
         self.show_delivered = show_delivered
         self.timezone = timezone
         self.summary = {}
+        self._translator = translator
+        self._language = language
 
         self.async_update = Throttle(self._scan_interval)(self._async_update)
         self.first_update = True
@@ -300,9 +322,31 @@ class SeventeenTrackData:
             )
             _LOGGER.debug("New package data received: %s", packages)
 
-            new_packages = {p.tracking_number: p for p in packages}
+            new_packages = {}
+            to_add = []
+            
+            for p in packages:
+                new_packages[p.tracking_number] = copy.deepcopy(p)
+                found = False
+                for o in self.packages:
+                    if o.tracking_number == p.tracking_number:
+                        if (ATTR_INFO_TEXT_TRANS not in o) or (o.info_text != p.info_text):
+                            new_packages[p.tracking_number][ATTR_INFO_TEXT_TRANS] = await translate_text(query_text=p.info_text, translator=self._translator, to_language=self._language)
+                        else:
+                            new_packages[p.tracking_number][ATTR_INFO_TEXT_TRANS] = o[ATTR_INFO_TEXT_TRANS]
+                            
+                        if (ATTR_LOCATION_TRANS not in o) or (o.location != p.location):
+                            new_packages[p.tracking_number][ATTR_LOCATION_TRANS] = await translate_text(query_text=p.location, translator=self._translator, to_language=self._language)
+                        else:
+                            new_packages[p.tracking_number][ATTR_LOCATION_TRANS] = o[ATTR_LOCATION_TRANS]
 
-            to_add = set(new_packages) - set(self.packages)
+                        found = True
+                
+                if not found:
+                    to_add += p.tracking_number
+                    
+                    new_packages[p.tracking_number][ATTR_INFO_TEXT_TRANS] = await translate_text(query_text=p.info_text, translator=self._translator, to_language=self._language)
+                    new_packages[p.tracking_number][ATTR_LOCATION_TRANS] = await translate_text(query_text=p.location, translator=self._translator, to_language=self._language)
 
             _LOGGER.debug("Will add new tracking numbers: %s", to_add)
             if to_add:
