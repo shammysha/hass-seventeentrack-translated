@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from datetime import timedelta
+import copy
 import logging
 
 from py17track import Client as SeventeenTrackClient
