@@ -164,8 +164,8 @@ class SeventeenTrackSummarySensor(SensorEntity):
                     ATTR_STATUS: package.status,
                     ATTR_LOCATION: package.location,
                     ATTR_TRACKING_NUMBER: package.tracking_number,
-                    ATTR_INFO_TEXT_TRANS: package[ATTR_INFO_TEXT_TRANS],
-                    ATTR_LOCATION_TRANS: package[ATTR_LOCATION_TRANS],
+                    ATTR_INFO_TEXT_TRANS: package.info_text_translated,
+                    ATTR_LOCATION_TRANS: package.location_translated,
                 }
             )
 
@@ -193,8 +193,8 @@ class SeventeenTrackPackageSensor(SensorEntity):
             ATTR_PACKAGE_TYPE: package.package_type,
             ATTR_TRACKING_INFO_LANGUAGE: package.tracking_info_language,
             ATTR_TRACKING_NUMBER: package.tracking_number,
-            ATTR_INFO_TEXT_TRANS: package[ATTR_INFO_TEXT_TRANS],
-            ATTR_LOCATION_TRANS: package[ATTR_LOCATION_TRANS],            
+            ATTR_INFO_TEXT_TRANS: package.info_text_translated,
+            ATTR_LOCATION_TRANS: package.location_translated            
         }
         self._data = data
         self._friendly_name = package.friendly_name
@@ -246,8 +246,8 @@ class SeventeenTrackPackageSensor(SensorEntity):
                 ATTR_INFO_TEXT: package.info_text,
                 ATTR_TIMESTAMP: package.timestamp,
                 ATTR_LOCATION: package.location,
-                ATTR_INFO_TEXT_TRANS: package[ATTR_INFO_TEXT_TRANS],
-                ATTR_LOCATION_TRANS: package[ATTR_LOCATION_TRANS],                
+                ATTR_INFO_TEXT_TRANS: package.info_text_translated,
+                ATTR_LOCATION_TRANS: package.location_translated                 
             }
         )
         self._state = package.status
@@ -340,15 +340,15 @@ class SeventeenTrackData:
                     if CONF_LANGUAGE:
                     
                         if o.tracking_number == p.tracking_number:
-                            if (ATTR_INFO_TEXT_TRANS not in o) or (o.info_text != p.info_text):
-                                pkg[ATTR_INFO_TEXT_TRANS] = await self._hass.async_add_executor_job(self._translate, p.info_text)
+                            if ('info_text_translated' not in o) or (o.info_text != p.info_text):
+                                pkg['info_text_translated'] = await self._hass.async_add_executor_job(self._translate, p.info_text)
                             else:
-                                pkg[ATTR_INFO_TEXT_TRANS] = o[ATTR_INFO_TEXT_TRANS]
+                                pkg['info_text_translated'] = o['info_text_translated']
                                 
-                            if (ATTR_LOCATION_TRANS not in o) or (o.location != p.location):
-                                pkg[ATTR_LOCATION_TRANS] = await self._hass.async_add_executor_job(self._translate, p.location)
+                            if ('location_translated' not in o) or (o.location != p.location):
+                                pkg['location_translated'] = await self._hass.async_add_executor_job(self._translate, p.location)
                             else:
-                                pkg[ATTR_LOCATION_TRANS] = o[ATTR_LOCATION_TRANS]
+                                pkg['location_translated'] = o['location_translated']
 
                         found = True
                 
@@ -356,8 +356,8 @@ class SeventeenTrackData:
                     to_add.append(p.tracking_number)
                     
                     if CONF_LANGUAGE:
-                        pkg[ATTR_INFO_TEXT_TRANS] = await self._hass.async_add_executor_job(self._translate, p.info_text)
-                        pkg[ATTR_LOCATION_TRANS] = await self._hass.async_add_executor_job(self._translate, p.location)
+                        pkg['info_text_translated'] = await self._hass.async_add_executor_job(self._translate, p.info_text)
+                        pkg['location_translated'] = await self._hass.async_add_executor_job(self._translate, p.location)
 
 
                 new_packages[p.tracking_number] = SeventeenTrackTranslatedPackage(pkg)
