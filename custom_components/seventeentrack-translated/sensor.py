@@ -30,7 +30,6 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.event import async_call_later
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from homeassistant.util import Throttle, slugify
-from homeassistant.components.surepetcare.const import ATTR_LOCATION
 
 _LOGGER = logging.getLogger(__name__)
 
