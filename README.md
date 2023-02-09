@@ -6,6 +6,8 @@ Component translates "text_info" and "location" attributes to selected language 
 
 Translated text stored in "text_info_translated" and "location_translated" attributes
 
+Component installation can be done with HACS
+
 Additional config entries:
 
 * translator: see https://github.com/UlionTse/translators#more-about-translators
