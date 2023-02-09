@@ -108,6 +108,7 @@ async def async_setup_platform(
     scan_interval = config.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
 
     data = SeventeenTrackData(
+        hass,
         client,
         async_add_entities,
         scan_interval,
@@ -288,6 +289,7 @@ class SeventeenTrackData:
 
     def __init__(
         self,
+        hass,
         client,
         async_add_entities,
         scan_interval,
@@ -299,6 +301,7 @@ class SeventeenTrackData:
     ):
         """Initialize."""
         self._async_add_entities = async_add_entities
+        self._hass = hass
         self._client = client
         self._scan_interval = scan_interval
         self._show_archived = show_archived
@@ -333,12 +336,12 @@ class SeventeenTrackData:
                     
                         if o.tracking_number == p.tracking_number:
                             if (ATTR_INFO_TEXT_TRANS not in o) or (o.info_text != p.info_text):
-                                new_packages[p.tracking_number][ATTR_INFO_TEXT_TRANS] = await translate_text(query_text=p.info_text, translator=self._translator, to_language=self._language)
+                                new_packages[p.tracking_number][ATTR_INFO_TEXT_TRANS] = await self._hass.async_add_executor_job(self._translate, p.info_text)
                             else:
                                 new_packages[p.tracking_number][ATTR_INFO_TEXT_TRANS] = o[ATTR_INFO_TEXT_TRANS]
                                 
                             if (ATTR_LOCATION_TRANS not in o) or (o.location != p.location):
-                                new_packages[p.tracking_number][ATTR_LOCATION_TRANS] = await translate_text(query_text=p.location, translator=self._translator, to_language=self._language)
+                                new_packages[p.tracking_number][ATTR_LOCATION_TRANS] = await self._hass.async_add_executor_job(self._translate, p.location)
                             else:
                                 new_packages[p.tracking_number][ATTR_LOCATION_TRANS] = o[ATTR_LOCATION_TRANS]
 
@@ -348,8 +351,8 @@ class SeventeenTrackData:
                     to_add += p.tracking_number
                     
                     if CONF_LANGUAGE:
-                        new_packages[p.tracking_number][ATTR_INFO_TEXT_TRANS] = await translate_text(query_text=p.info_text, translator=self._translator, to_language=self._language)
-                        new_packages[p.tracking_number][ATTR_LOCATION_TRANS] = await translate_text(query_text=p.location, translator=self._translator, to_language=self._language)
+                        new_packages[p.tracking_number][ATTR_INFO_TEXT_TRANS] = await self._hass.async_add_executor_job(self._translate, p.info_text)
+                        new_packages[p.tracking_number][ATTR_LOCATION_TRANS] = await self._hass.async_add_executor_job(self._translate, p.location)
 
             _LOGGER.debug("Will add new tracking numbers: %s", to_add)
             if to_add:
@@ -386,3 +389,7 @@ class SeventeenTrackData:
         except SeventeenTrackError as err:
             _LOGGER.error("There was an error retrieving the summary: %s", err)
             self.summary = {}
+
+    def _translate(self, text=''):
+        return translate_text(query_text=text, translator=self._translator, to_language=self._language)
+    
