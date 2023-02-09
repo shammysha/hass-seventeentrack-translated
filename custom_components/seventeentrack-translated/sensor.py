@@ -337,7 +337,9 @@ class SeventeenTrackData:
                     if not attr.startswith('__'):
                         pkg[attr] = getattr(p, attr)
 
+                _LOGGER.debug('ddfgfdff: %s', pkg.get('info_text', ''))
                 loc = re.findall(r'\[([^\]]+)\]', pkg.get('info_text', ''))
+
                 if loc:
                     pkg['info_text'] = re.sub(r'\[([^\]]+)\]', '', pkg.get('info_text', '')).strip().capitalize()
                     pkg['location'] = loc[0] if not pkg.get('location') else pkg.get('location')
@@ -367,9 +369,6 @@ class SeventeenTrackData:
                         pkg['location_translated'] = await self._hass.async_add_executor_job(self._translate, p.location)
 
                 new_packages[p.tracking_number] = SeventeenTrackTranslatedPackage(pkg)
-
-
-            _LOGGER.debug(new_packages)
 
             _LOGGER.debug("Will add new tracking numbers: %s", to_add)
             if to_add:
