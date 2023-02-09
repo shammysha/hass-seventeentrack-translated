@@ -339,7 +339,7 @@ class SeventeenTrackData:
 
                 loc = re.findall(r'\[([^\]]+)\]', pkg.get('info_text', ''))
                 if loc:
-                    pkg['info_text'] = re.sub(r'\[([^\]]+)\]', pkg.get('info_text', '')).strip().capitalize()
+                    pkg['info_text'] = re.sub(r'\[([^\]]+)\]', '', pkg.get('info_text', '')).strip().capitalize()
                     pkg['location'] = loc[0] if not pkg.get('location') else pkg.get('location')
                     
                 found = False
