@@ -346,7 +346,7 @@ class SeventeenTrackData:
                 for o in self.packages.values():
                     if CONF_LANGUAGE:
                     
-                        if o.get('tracking_number') == pkg['tracking_number']:
+                        if o.tracking_number == pkg['tracking_number']:
                             if ('info_text_translated' not in o) or (o.info_text != pkg['info_text']):
                                 pkg['info_text_translated'] = await self._hass.async_add_executor_job(self._translate, pkg['info_text'])
                             else:
