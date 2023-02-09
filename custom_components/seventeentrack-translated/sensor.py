@@ -333,7 +333,7 @@ class SeventeenTrackData:
                 
                 for attr in dir(p):
                     if not attr.startswith('__'):
-                        new_packages[p.tracking_number][attr] = p.getattr(attr)
+                        new_packages[p.tracking_number][attr] = p.get(attr)
                     
                 found = False
                 for o in self.packages:
