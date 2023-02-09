@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 from datetime import timedelta
+
+import re
 import copy
 import logging
 
@@ -334,6 +336,11 @@ class SeventeenTrackData:
                 for attr in dir(p):
                     if not attr.startswith('__'):
                         pkg[attr] = getattr(p, attr)
+
+                loc = re.findall(r'\[([^\]]+)\]', pkg.get('info_text', ''))
+                if loc:
+                    pkg['info_text'] = re.sub(r'\[([^\]]+)\]', pkg.get('info_text', '')).strip().capitalize()
+                    pkg['location'] = loc[0] if not pkg.get('location') else pkg.get('location')
                     
                 found = False
                 for o in self.packages:
@@ -358,7 +365,6 @@ class SeventeenTrackData:
                     if CONF_LANGUAGE:
                         pkg['info_text_translated'] = await self._hass.async_add_executor_job(self._translate, p.info_text)
                         pkg['location_translated'] = await self._hass.async_add_executor_job(self._translate, p.location)
-
 
                 new_packages[p.tracking_number] = SeventeenTrackTranslatedPackage(pkg)
 
