@@ -359,6 +359,8 @@ class SeventeenTrackData:
                         new_packages[p.tracking_number][ATTR_INFO_TEXT_TRANS] = await self._hass.async_add_executor_job(self._translate, p.info_text)
                         new_packages[p.tracking_number][ATTR_LOCATION_TRANS] = await self._hass.async_add_executor_job(self._translate, p.location)
 
+            _LOGGER.debug(new_packages)
+
             _LOGGER.debug("Will add new tracking numbers: %s", to_add)
             if to_add:
                 self._async_add_entities(
