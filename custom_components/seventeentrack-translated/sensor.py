@@ -391,5 +391,8 @@ class SeventeenTrackData:
             self.summary = {}
 
     def _translate(self, text=''):
-        return translate_text(query_text=text, translator=self._translator, to_language=self._language)
+        if text:
+            text = translate_text(query_text=text, translator=self._translator, to_language=self._language)
+        return text
+    
     
