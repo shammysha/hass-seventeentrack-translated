@@ -329,11 +329,11 @@ class SeventeenTrackData:
             to_add = []
             
             for p in packages:
-                new_packages[p.tracking_number] = {}
+                pkg = {}
                 
                 for attr in dir(p):
                     if not attr.startswith('__'):
-                        new_packages[p.tracking_number][attr] = getattr(p, attr)
+                        pkg[attr] = getattr(p, attr)
                     
                 found = False
                 for o in self.packages:
@@ -341,14 +341,14 @@ class SeventeenTrackData:
                     
                         if o.tracking_number == p.tracking_number:
                             if (ATTR_INFO_TEXT_TRANS not in o) or (o.info_text != p.info_text):
-                                new_packages[p.tracking_number][ATTR_INFO_TEXT_TRANS] = await self._hass.async_add_executor_job(self._translate, p.info_text)
+                                pkg[ATTR_INFO_TEXT_TRANS] = await self._hass.async_add_executor_job(self._translate, p.info_text)
                             else:
-                                new_packages[p.tracking_number][ATTR_INFO_TEXT_TRANS] = o[ATTR_INFO_TEXT_TRANS]
+                                pkg[ATTR_INFO_TEXT_TRANS] = o[ATTR_INFO_TEXT_TRANS]
                                 
                             if (ATTR_LOCATION_TRANS not in o) or (o.location != p.location):
-                                new_packages[p.tracking_number][ATTR_LOCATION_TRANS] = await self._hass.async_add_executor_job(self._translate, p.location)
+                                pkg[ATTR_LOCATION_TRANS] = await self._hass.async_add_executor_job(self._translate, p.location)
                             else:
-                                new_packages[p.tracking_number][ATTR_LOCATION_TRANS] = o[ATTR_LOCATION_TRANS]
+                                pkg[ATTR_LOCATION_TRANS] = o[ATTR_LOCATION_TRANS]
 
                         found = True
                 
@@ -356,8 +356,12 @@ class SeventeenTrackData:
                     to_add.append(p.tracking_number)
                     
                     if CONF_LANGUAGE:
-                        new_packages[p.tracking_number][ATTR_INFO_TEXT_TRANS] = await self._hass.async_add_executor_job(self._translate, p.info_text)
-                        new_packages[p.tracking_number][ATTR_LOCATION_TRANS] = await self._hass.async_add_executor_job(self._translate, p.location)
+                        pkg[ATTR_INFO_TEXT_TRANS] = await self._hass.async_add_executor_job(self._translate, p.info_text)
+                        pkg[ATTR_LOCATION_TRANS] = await self._hass.async_add_executor_job(self._translate, p.location)
+
+
+                new_packages[p.tracking_number] = SeventeenTrackTranslatedPackage(pkg)
+
 
             _LOGGER.debug(new_packages)
 
@@ -402,4 +406,11 @@ class SeventeenTrackData:
             text = translate_text(query_text=text, translator=self._translator, to_language=self._language)
         return text
     
+    
+    
+class SeventeenTrackTranslatedPackage:
+    def __init__(self, dictionary):
+        for k, v in dictionary.items():
+            setattr(self, k, v)    
+
     
