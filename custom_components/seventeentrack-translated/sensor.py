@@ -348,12 +348,12 @@ class SeventeenTrackData:
                     
                         if o.tracking_number == pkg['tracking_number']:
                             if ('info_text_translated' not in o) or (o.info_text != pkg['info_text']):
-                                pkg['info_text_translated'] = await self._hass.async_add_executor_job(self._translate, p.info_text)
+                                pkg['info_text_translated'] = await self._hass.async_add_executor_job(self._translate, pkg['info_text'])
                             else:
                                 pkg['info_text_translated'] = o['info_text_translated']
                                 
                             if ('location_translated' not in o) or (o.location != pkg['location']):
-                                pkg['location_translated'] = await self._hass.async_add_executor_job(self._translate, p.location)
+                                pkg['location_translated'] = await self._hass.async_add_executor_job(self._translate, pkg['location'])
                             else:
                                 pkg['location_translated'] = o['location_translated']
 
@@ -363,8 +363,8 @@ class SeventeenTrackData:
                     to_add.append(p.tracking_number)
                     
                     if CONF_LANGUAGE:
-                        pkg['info_text_translated'] = await self._hass.async_add_executor_job(self._translate, p.info_text)
-                        pkg['location_translated'] = await self._hass.async_add_executor_job(self._translate, p.location)
+                        pkg['info_text_translated'] = await self._hass.async_add_executor_job(self._translate, pkg['info_text'])
+                        pkg['location_translated'] = await self._hass.async_add_executor_job(self._translate, pkg['location'])
 
                 new_packages[p.tracking_number] = SeventeenTrackTranslatedPackage(pkg)
 
