@@ -329,24 +329,27 @@ class SeventeenTrackData:
                 new_packages[p.tracking_number] = copy.deepcopy(p)
                 found = False
                 for o in self.packages:
-                    if o.tracking_number == p.tracking_number:
-                        if (ATTR_INFO_TEXT_TRANS not in o) or (o.info_text != p.info_text):
-                            new_packages[p.tracking_number][ATTR_INFO_TEXT_TRANS] = await translate_text(query_text=p.info_text, translator=self._translator, to_language=self._language)
-                        else:
-                            new_packages[p.tracking_number][ATTR_INFO_TEXT_TRANS] = o[ATTR_INFO_TEXT_TRANS]
-                            
-                        if (ATTR_LOCATION_TRANS not in o) or (o.location != p.location):
-                            new_packages[p.tracking_number][ATTR_LOCATION_TRANS] = await translate_text(query_text=p.location, translator=self._translator, to_language=self._language)
-                        else:
-                            new_packages[p.tracking_number][ATTR_LOCATION_TRANS] = o[ATTR_LOCATION_TRANS]
+                    if CONF_LANGUAGE:
+                    
+                        if o.tracking_number == p.tracking_number:
+                            if (ATTR_INFO_TEXT_TRANS not in o) or (o.info_text != p.info_text):
+                                new_packages[p.tracking_number][ATTR_INFO_TEXT_TRANS] = await translate_text(query_text=p.info_text, translator=self._translator, to_language=self._language)
+                            else:
+                                new_packages[p.tracking_number][ATTR_INFO_TEXT_TRANS] = o[ATTR_INFO_TEXT_TRANS]
+                                
+                            if (ATTR_LOCATION_TRANS not in o) or (o.location != p.location):
+                                new_packages[p.tracking_number][ATTR_LOCATION_TRANS] = await translate_text(query_text=p.location, translator=self._translator, to_language=self._language)
+                            else:
+                                new_packages[p.tracking_number][ATTR_LOCATION_TRANS] = o[ATTR_LOCATION_TRANS]
 
                         found = True
                 
                 if not found:
                     to_add += p.tracking_number
                     
-                    new_packages[p.tracking_number][ATTR_INFO_TEXT_TRANS] = await translate_text(query_text=p.info_text, translator=self._translator, to_language=self._language)
-                    new_packages[p.tracking_number][ATTR_LOCATION_TRANS] = await translate_text(query_text=p.location, translator=self._translator, to_language=self._language)
+                    if CONF_LANGUAGE:
+                        new_packages[p.tracking_number][ATTR_INFO_TEXT_TRANS] = await translate_text(query_text=p.info_text, translator=self._translator, to_language=self._language)
+                        new_packages[p.tracking_number][ATTR_LOCATION_TRANS] = await translate_text(query_text=p.location, translator=self._translator, to_language=self._language)
 
             _LOGGER.debug("Will add new tracking numbers: %s", to_add)
             if to_add:
