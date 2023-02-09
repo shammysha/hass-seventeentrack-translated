@@ -353,7 +353,7 @@ class SeventeenTrackData:
                         found = True
                 
                 if not found:
-                    to_add += p.tracking_number
+                    to_add.append(p.tracking_number)
                     
                     if CONF_LANGUAGE:
                         new_packages[p.tracking_number][ATTR_INFO_TEXT_TRANS] = await self._hass.async_add_executor_job(self._translate, p.info_text)
