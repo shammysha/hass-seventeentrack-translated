@@ -337,25 +337,25 @@ class SeventeenTrackData:
                     if not attr.startswith('__'):
                         pkg[attr] = getattr(p, attr)
 
-                loc = re.findall(r'\[([^\]]+)\]', pkg.get('info_text', ''))
+                loc = re.findall(r'\[([^\]]+)\]', pkg['info_text'])
                 if loc:
-                    pkg['info_text'] = re.sub(r'\[([^\]]+)\]', '', pkg.get('info_text', '')).strip().capitalize()
-                    pkg['location'] = loc[0] if not pkg.get('location') else pkg.get('location')
+                    pkg['info_text'] = re.sub(r'\[([^\]]+)\]', '', pkg['info_text']).strip().capitalize()
+                    pkg['location'] = re.sub(r'\bg\b', '', loc[0], flags=re.I) if not pkg['location'] else pkg['location']
                     
                 found = False
                 for o in self.packages.values():
                     if CONF_LANGUAGE:
                     
                         if o.tracking_number == pkg['tracking_number']:
-                            if ('info_text_translated' not in o) or (o.info_text != pkg['info_text']):
+                            if not (hasattr(o, 'info_text_translated') and o.info_text == pkg['info_text']):
                                 pkg['info_text_translated'] = await self._hass.async_add_executor_job(self._translate, pkg['info_text'])
                             else:
-                                pkg['info_text_translated'] = o['info_text_translated']
+                                pkg['info_text_translated'] = o.info_text_translated
                                 
-                            if ('location_translated' not in o) or (o.location != pkg['location']):
+                            if not (hasattr(o, 'location_translated') and  o.location == pkg['location']):
                                 pkg['location_translated'] = await self._hass.async_add_executor_job(self._translate, pkg['location'])
                             else:
-                                pkg['location_translated'] = o['location_translated']
+                                pkg['location_translated'] = o.location_translated
 
                         found = True
                 
