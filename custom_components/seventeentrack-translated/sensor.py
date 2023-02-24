@@ -337,11 +337,9 @@ class SeventeenTrackData:
                     if not attr.startswith('__'):
                         pkg[attr] = getattr(p, attr)
 
-                pkg['info_text'] = pkg.get('info_text', '')
-
-                loc = re.findall(r'\[([^\]]+)\]', pkg['info_text'])
+                loc = re.findall(r'\[([^\]]+)\]', str(pkg['info_text']))
                 if loc:
-                    pkg['info_text'] = re.sub(r'\[([^\]]+)\]', '', pkg['info_text']).strip().capitalize()
+                    pkg['info_text'] = re.sub(r'\[([^\]]+)\]', '', str(pkg['info_text'])).strip().capitalize()
                     pkg['location'] = re.sub(r'\bg\b', '', loc[0], flags=re.I) if not pkg['location'] else pkg['location']
                     
                 found = False
