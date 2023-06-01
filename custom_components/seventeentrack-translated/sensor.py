@@ -387,7 +387,7 @@ class SeventeenTrackData:
             _LOGGER.error("There was an error retrieving packages: %s", err)
             
         except TypeError as err:            
-            _LOGGER.error("There was error in translation procedure: %s (incoming message: %s)", err, text)
+            _LOGGER.error("There was an error in translation procedure: %s", err)
             
         try:
             self.summary = await self._client.profile.summary(
