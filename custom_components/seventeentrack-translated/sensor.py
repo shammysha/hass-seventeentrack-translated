@@ -348,11 +348,13 @@ class SeventeenTrackData:
                     
                         if o.tracking_number == pkg['tracking_number']:
                             if not (hasattr(o, 'info_text_translated') and o.info_text == pkg['info_text']):
+                                _LOGGER.debug("Tring to translate %s", pkg['info_text'])
                                 pkg['info_text_translated'] = await self._hass.async_add_executor_job(self._translate, pkg['info_text'])
                             else:
                                 pkg['info_text_translated'] = o.info_text_translated
                                 
                             if not (hasattr(o, 'location_translated') and  o.location == pkg['location']):
+                                _LOGGER.debug("Tring to translate %s", pkg['location'])
                                 pkg['location_translated'] = await self._hass.async_add_executor_job(self._translate, pkg['location'])
                             else:
                                 pkg['location_translated'] = o.location_translated
@@ -363,7 +365,9 @@ class SeventeenTrackData:
                     to_add.append(p.tracking_number)
                     
                     if CONF_LANGUAGE:
+                        _LOGGER.debug("Tring to translate %s", pkg['info_text'])
                         pkg['info_text_translated'] = await self._hass.async_add_executor_job(self._translate, pkg['info_text'])
+                        _LOGGER.debug("Tring to translate %s", pkg['location'])
                         pkg['location_translated'] = await self._hass.async_add_executor_job(self._translate, pkg['location'])
 
                 new_packages[p.tracking_number] = SeventeenTrackTranslatedPackage(pkg)
@@ -381,7 +385,10 @@ class SeventeenTrackData:
             self.packages = new_packages
         except SeventeenTrackError as err:
             _LOGGER.error("There was an error retrieving packages: %s", err)
-
+            
+        except TypeError as err:            
+            _LOGGER.error("There was error in translation procedure: %s (incoming message: %s)", err, text)
+            
         try:
             self.summary = await self._client.profile.summary(
                 show_archived=self._show_archived
@@ -406,10 +413,7 @@ class SeventeenTrackData:
 
     def _translate(self, text=''):
         if text:
-            try:
-                text = translate_text(query_text=text, translator=self._translator, to_language=self._language)
-            except TypeError as err:
-                _LOGGER.error("There was error in translation procedure: %s (incoming message: %s)", err, text)
+            text = translate_text(query_text=text, translator=self._translator, to_language=self._language)
         return text
         
     
