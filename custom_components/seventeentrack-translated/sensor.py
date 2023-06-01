@@ -408,7 +408,7 @@ class SeventeenTrackData:
         if text:
             try:
                 text = translate_text(query_text=text, translator=self._translator, to_language=self._language)
-            except SeventeenTrackError as err:
+            except TypeError as err:
                 _LOGGER.error("There was error in translation procedure: %s (incoming message: %s)", err, text)
         return text
         
