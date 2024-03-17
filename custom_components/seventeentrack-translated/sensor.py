@@ -342,7 +342,11 @@ class SeventeenTrackData:
                     pkg['info_text'] = re.sub(r'\[([^\]]+)\]', '', str(pkg['info_text'])).strip().capitalize()
                     pkg['location'] = re.sub(r'\bg\b', '', loc[0], flags=re.I) if not pkg['location'] else pkg['location']
                     
+                pkg['info_text_translated'] = pkg['info_text']
+                pkg['location_translated'] = pkg['location'] 
+                
                 found = False
+                
                 for o in self.packages.values():
                     if CONF_LANGUAGE:
                     
